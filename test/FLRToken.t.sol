@@ -16,10 +16,12 @@ contract FLRTokenTest is Test {
         bob = address(0x3);
     }
 
+    receive() external payable {} // Add this function to accept ETH
+
     function testBuyToken() public {
         vm.prank(alice);
-        vm.deal(alice, 1000 ether);
-        FLT.BuyToken{value : 1e18}(1000 ether);
-
+        vm.deal(alice, 1000e8);
+        FLT.BuyToken{value: 1e8}(1000 ether);
+        assertEq(FLT.balanceOf(address(alice)), 1000 ether);
     }
 }

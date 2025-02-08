@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.25;
-import {Test, console} from "dependencies/forge-std-1.9.5/src/Test.sol";
 
 import {ERC20} from "@openzeppelin-contracts/token/ERC20/ERC20.sol";
 import {Strings} from "@openzeppelin-contracts/utils/Strings.sol";
@@ -34,8 +33,7 @@ contract FLRToken is ERC20 {
             revert InsufficientFunds();
         }
         // payable(owner).transfer(msg.value);
-        (bool success, ) = payable(owner).call{value: msg.value}("");
-        console.log("Debug 1");
+        (bool success, ) = payable(owner).call{value: msg.value, gas: 2300}("");
         _transfer(address(this), msg.sender, _amount);
     }
 
