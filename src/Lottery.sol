@@ -37,6 +37,7 @@ contract FlareLottery is Ownable {
     error InvalidDuration();
     error LotterNotAcitve();
     error LotteryEnded();
+    error RNGNotAvailable();
     constructor(
         address _lotteryToken,
         uint256 _ticketPrice
@@ -65,44 +66,37 @@ contract FlareLottery is Ownable {
             revert LotteryEnded();
         }
         uint256 price = getPriceInFLR();
-      
+
         // Transfer ticket price to contract
-        console.log("Debug", msg.sender);
         lotteryToken.transferFrom(msg.sender, address(this), ticketPrice);
         players.push(msg.sender);
 
         emit TicketPurchased(msg.sender);
     }
 
-    // function drawWinner() external onlyOwner {
-    //     require(block.timestamp >= lotteryEndTime, "Lottery still running");
-    //     require(players.length > 0, "No players joined");
-    //     require(lotteryActive, "Lottery already ended");
+    function finalizeLottery() external onlyOwner {
+        (uint256 randomNumber, , ) = _generator.getRandomNumber();
+        console.log("Debug randomNumber", randomNumber);
+        if (randomNumber == 0) {
+            revert RNGNotAvailable();
+        }
 
-    //     // Request random number from Flare RNG
-    //     // rngRequestId = flareRNG.requestRandomNumber();
-    //     (uint256 rngRequestId, , ) = _generator.getRandomNumber();
+        // Select winner
+        address winner = players[randomNumber % players.length];
+        console.log("Debug winner", winner);
 
-    //     lotteryActive = false;
-    // }
+        uint256 prize = lotteryToken.balanceOf(address(this));
 
-    // function finalizeLottery() external onlyOwner {
-    //     require(!lotteryActive, "Lottery not yet drawn");
-    //     uint256 randomNum = _generator.getRandomNumber();
-    //     require(randomNum > 0, "Random number not available");
+        // Transfer prize to winner
+        lotteryToken.transfer(winner, prize);
+        lotteryActive = false;
+    console.log("Debug here end");
+        emit LotteryWinner(winner, prize);
 
-    //     // Select winner
-    //     address winner = players[randomNum % players.length];
-    //     uint256 prize = lotteryToken.balanceOf(address(this));
-
-    //     // Transfer prize to winner
-    //     lotteryToken.transfer(winner, prize);
-    //     emit LotteryWinner(winner, prize);
-
-    //     // Reset for next round
-    //     delete players;
-    //     rngRequestId = 0;
-    // }
+        // Reset for next round
+        delete players;
+        rngRequestId = 0;
+    }
 
     function getPriceInFLR() public returns (uint price) {
         uint value = getFeedById();

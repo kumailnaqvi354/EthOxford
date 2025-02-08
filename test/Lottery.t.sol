@@ -48,6 +48,75 @@ contract FlareLotteryTest is Test {
         assertEq(lottery.players(0), address(alice));
         vm.stopPrank();
     }
+    function testBuyLotteryMultiBuy() public {
+        vm.prank(owner);
+        lottery.addLottery(1 weeks);
+        vm.startPrank(alice);
+        vm.deal(alice, 1000e18);
+        FLT.BuyToken{value: 1e8}(1000 ether);
+        assertEq(FLT.balanceOf(address(alice)), 1000 ether);
+        FLT.approve(address(lottery), 100000 ether);
+        lottery.buyTicket{value: 0.1 ether}();
+        assertEq(lottery.players(0), address(alice));
+        vm.stopPrank();
+
+        vm.startPrank(spencer);
+        vm.deal(spencer, 1000e18);
+        FLT.BuyToken{value: 1e8}(1000 ether);
+        assertEq(FLT.balanceOf(address(spencer)), 1000 ether);
+        FLT.approve(address(lottery), 100000 ether);
+        lottery.buyTicket{value: 0.1 ether}();
+        assertEq(lottery.players(1), address(spencer));
+        vm.stopPrank();
+
+        vm.startPrank(bob);
+        vm.deal(bob, 1000e18);
+        FLT.BuyToken{value: 1e8}(1000 ether);
+        assertEq(FLT.balanceOf(address(bob)), 1000 ether);
+        FLT.approve(address(lottery), 100000 ether);
+        lottery.buyTicket{value: 0.1 ether}();
+        assertEq(lottery.players(2), address(bob));
+        vm.stopPrank();
+        
+    }
+
+    function testFinalizeLottery() public {
+        vm.prank(owner);
+        lottery.addLottery(1 weeks);
+        vm.startPrank(alice);
+        vm.deal(alice, 1000e18);
+        FLT.BuyToken{value: 1e8}(1000 ether);
+        assertEq(FLT.balanceOf(address(alice)), 1000 ether);
+        FLT.approve(address(lottery), 100000 ether);
+        lottery.buyTicket{value: 0.1 ether}();
+        assertEq(lottery.players(0), address(alice));
+        vm.stopPrank();
+
+        vm.startPrank(spencer);
+        vm.deal(spencer, 1000e18);
+        FLT.BuyToken{value: 1e8}(1000 ether);
+        assertEq(FLT.balanceOf(address(spencer)), 1000 ether);
+        FLT.approve(address(lottery), 100000 ether);
+        lottery.buyTicket{value: 0.1 ether}();
+        assertEq(lottery.players(1), address(spencer));
+        vm.stopPrank();
+
+        vm.startPrank(bob);
+        vm.deal(bob, 1000e18);
+        FLT.BuyToken{value: 1e8}(1000 ether);
+        assertEq(FLT.balanceOf(address(bob)), 1000 ether);
+        FLT.approve(address(lottery), 100000 ether);
+        lottery.buyTicket{value: 0.1 ether}();
+        assertEq(lottery.players(2), address(bob));
+        vm.stopPrank();
+
+
+        vm.prank(owner);
+        lottery.finalizeLottery();
+        assertEq(lottery.lotteryActive(), false);
+        assertEq(lottery.rngRequestId(), 0);
+
+    }
 
     receive() external payable {} // Add this function to accept ETH
 }

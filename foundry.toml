@@ -1,4 +1,5 @@
 [profile.default]
+match_contract = "FLRTokenTest|LotteryTest"
 solc-version = "0.8.25"
 evm_version = "london"
 src = "src"
@@ -35,3 +36,6 @@ coston = { key = "X", chain = 16, url = "${COSTON_RPC_URL}" }
 coston2 = { key = "X", chain = 16, url = "${COSTON2_RPC_URL}" }
 songbird = { key = "X", chain = 16, url = "${SONGBIRD_RPC_URL}" }
 flare = { key = "X", chain = 16, url = "${FLARE_RPC_URL}" }
+
+
+
