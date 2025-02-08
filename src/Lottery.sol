@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.25;
-import {Test, console} from "dependencies/forge-std-1.9.5/src/Test.sol";
 
 import {Strings} from "@openzeppelin-contracts/utils/Strings.sol";
 import {ContractRegistry} from "dependencies/flare-periphery-0.0.1/src/coston2/ContractRegistry.sol";
@@ -12,21 +11,19 @@ import {FtsoV2Interface} from "dependencies/flare-periphery-0.0.1/src/coston2/Ft
 
 contract FlareLottery is Ownable {
     IERC20 public lotteryToken;
+    RandomNumberV2Interface _generator;
+    FtsoV2Interface ftso;
+    address[] public players;
 
     uint256 public ticketPrice;
     uint256 public lotteryEndTime;
     uint256 public rngRequestId;
     uint256 public duration;
-
     uint256 public lotterPrice = 1e18;
-    address[] public players;
-
     uint16 private _secretNumber;
-    RandomNumberV2Interface _generator;
-    FtsoV2Interface ftso;
-    string public message;
-
     bool public lotteryActive;
+
+    string public message;
 
     event TicketPurchased(address indexed player);
     event LotteryWinner(address indexed winner, uint256 prize);
@@ -76,21 +73,17 @@ contract FlareLottery is Ownable {
 
     function finalizeLottery() external onlyOwner {
         (uint256 randomNumber, , ) = _generator.getRandomNumber();
-        console.log("Debug randomNumber", randomNumber);
         if (randomNumber == 0) {
             revert RNGNotAvailable();
         }
 
         // Select winner
         address winner = players[randomNumber % players.length];
-        console.log("Debug winner", winner);
-
         uint256 prize = lotteryToken.balanceOf(address(this));
 
         // Transfer prize to winner
         lotteryToken.transfer(winner, prize);
         lotteryActive = false;
-    console.log("Debug here end");
         emit LotteryWinner(winner, prize);
 
         // Reset for next round

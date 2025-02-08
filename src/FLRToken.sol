@@ -6,18 +6,18 @@ import {ERC20} from "@openzeppelin-contracts/token/ERC20/ERC20.sol";
 import {Strings} from "@openzeppelin-contracts/utils/Strings.sol";
 import {ContractRegistry} from "dependencies/flare-periphery-0.0.1/src/coston2/ContractRegistry.sol";
 import {FtsoV2Interface} from "dependencies/flare-periphery-0.0.1/src/coston2/FtsoV2Interface.sol";
-// import {TestFtsoV2Interface} from "@flarenetwork/flare-periphery-contracts/coston2/TestFtsoV2Interface.sol";
 
 contract FLRToken is ERC20 {
     address public owner;
-
     FtsoV2Interface ftso;
+
     string public message;
 
-    uint256 tokenPrice = 1; // represents 1 usd
+    uint256 tokenPrice = 1;
 
     error InvalidAmount();
     error InsufficientFunds();
+
     constructor() ERC20("FLRToken", "FLT") {
         owner = msg.sender;
         _mint(address(this), type(uint256).max);
