@@ -8,7 +8,7 @@ import { ThemeToggle } from "./components/ThemeToggle"
 import { AnimatedBackground } from "./components/AnimatedBackground"
 import { motion, AnimatePresence } from "framer-motion"
 import { ethers } from "ethers";
-import { FLR_ABI, FLR_ADDRESS } from "@/lib/contract"
+import { FLR_ABI, FLR_ADDRESS,LOTTER_ABI,LOTTERY_ADDRESS } from "@/lib/contract"
 import { parseUnits } from "ethers/lib/utils"
 declare global {
   interface Window {
@@ -33,24 +33,29 @@ export default function RefinedTokenLottery() {
     // console.log("Debug", await signer.getAddress());
     const contractWithSigner = Contract.connect(signer);
 
-    const tx = await contractWithSigner.BuyToken(parseUnits(amount.toString(), "ether"), {value: parseUnits(".1", 'ether')})
-
+    const tx = await contractWithSigner.BuyToken(parseUnits(amount.toString(), "ether"), { value: parseUnits(".1", 'ether') })
+    await tx.await();
     let bal = await Contract.balanceOf(await signer.getAddress());
     setTokenBalance(bal.toString());
 
   }
 
-  const handleLotteryParticipation = () => {
-    if (tokenBalance < 10) return
-    setTokenBalance((prev) => prev - 10)
-    setLotteryTickets((prev) => prev + 1)
-    setIsLotteryActive(true)
-    setTimeout(() => {
-      const result = Math.random() > 0.5 ? "Won" : "Lost"
-      setLotteryResult(result)
-      setIsLotteryActive(false)
-      if (result === "Won") setTokenBalance((prev) => prev + 20)
-    }, 3000)
+  const handleLotteryParticipation = async() => {
+    const provider: any = new ethers.providers.Web3Provider(window['ethereum'])
+
+    const TokenContract = new ethers.Contract(FLR_ADDRESS, FLR_ABI, provider);
+    const signer = provider.getSigner()
+    // console.log("Debug", await signer.getAddress());
+    const tokenContractWithSigner = TokenContract.connect(signer);
+
+    const tx1 = await tokenContractWithSigner.approve(LOTTERY_ADDRESS, parseUnits("1000", "ether"));
+    await tx1.wait();
+    const Contract = new ethers.Contract(LOTTERY_ADDRESS, LOTTER_ABI, provider);
+    // console.log("Debug", await signer.getAddress());
+    const contractWithSigner = Contract.connect(signer);
+    const tx = await contractWithSigner.buyTicket({value: parseUnits(".1", 'ether') })
+    await tx.wait();
+
   }
 
 
@@ -68,7 +73,7 @@ export default function RefinedTokenLottery() {
     // For this, you need the account signer...
     const signer = provider.getSigner()
     const Contract = new ethers.Contract(FLR_ADDRESS, FLR_ABI, provider);
-    
+
     let bal = await Contract.balanceOf(await signer.getAddress());
     setTokenBalance(bal.toString());
 
@@ -145,7 +150,7 @@ export default function RefinedTokenLottery() {
                   </span>
                 )}
               </div>
-              <p className="mb-4 text-lg">Your tickets: {lotteryTickets}</p>
+              {/* <p className="mb-4 text-lg">Your tickets: {lotteryTickets}</p> */}
               <Button
                 onClick={handleLotteryParticipation}
                 className="w-full"
